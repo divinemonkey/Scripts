@@ -1,0 +1,25 @@
+#!/bin/bash
+# Script to copy local ssh keys to a particular subnet of Linux/Unix devices.
+# Author: Graham McMillan
+# Date: 24/11/2017
+
+# Perform nmap scan on certain subnet and add the ip addresses to array
+arr=($(nmap -n -sP 192.168.13.200-220 | grep report | awk '{ print$5 }'))
+
+# Perform automated acceptance of authentication warning
+findip='set timeout 5
+	spawn ssh-copy-id root@$env(ip)
+	expect "(yes/no)?"
+	send "yes\r"
+	expect "password:"
+	send "password\r"
+	send_user "ssh key copied!"'
+
+# Loop through ip addresses, remove existing entries from known_hosts and copy ssh keys
+for i in "${arr[@]}"; do
+	export ip="$i"
+	sed -i "" "/$ip/d" $HOME/.ssh/known_hosts
+	echo $ip
+	expect -c "$findip"
+	#echo "ssh keys copied for ip $ip"
+done
