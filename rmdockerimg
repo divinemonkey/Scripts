@@ -1,0 +1,17 @@
+#!/bin/bash
+# Date 19/12/17
+# Author Graham McMillan <graham1982@gmail.com>
+# Script to search for docker images months/years old and prompt user to delete
+
+for i in $(docker image ls | grep -E 'months ago|years ago' | awk '{ print $3 }'); do
+	img=($(docker inspect --format='{{.RepoTags}}' $i))
+	for n in $i; do
+		echo ""
+		read -p "Do you want to remove $img (y/n)? " yn
+		case $yn in
+			[Yy]* ) docker image rm $i;;
+			[Nn]* ) break;;
+			* ) echo "Please answer yes or no";;
+		esac
+	done
+done
